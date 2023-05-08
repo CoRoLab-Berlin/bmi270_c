@@ -628,29 +628,29 @@ void get_temp_raw(struct bmi270 *sensor, int16_t *temp)
     *temp = (buffer[1] << 8) | buffer[0];
 }
 
-void get_acc(struct bmi270 *sensor, float *acc_x, float *acc_y, float *acc_z)
+void get_acc(struct bmi270 *sensor, double *acc_x, double *acc_y, double *acc_z)
 {
     int16_t acc_x_raw, acc_y_raw, acc_z_raw;
 
     get_acc_raw(sensor, &acc_x_raw, &acc_y_raw, &acc_z_raw);
 
-    *acc_x = (float)acc_x_raw * sensor->acc_range / 32768;
-    *acc_y = (float)acc_y_raw * sensor->acc_range / 32768;
-    *acc_z = (float)acc_z_raw * sensor->acc_range / 32768;
+    *acc_x = (double)acc_x_raw * sensor->acc_range / 32768;
+    *acc_y = (double)acc_y_raw * sensor->acc_range / 32768;
+    *acc_z = (double)acc_z_raw * sensor->acc_range / 32768;
 }
 
-void get_gyr(struct bmi270 *sensor, float *gyr_x, float *gyr_y, float *gyr_z)
+void get_gyr(struct bmi270 *sensor, double *gyr_x, double *gyr_y, double *gyr_z)
 {
     int16_t gyr_x_raw, gyr_y_raw, gyr_z_raw;
 
     get_gyr_raw(sensor, &gyr_x_raw, &gyr_y_raw, &gyr_z_raw);
 
-    *gyr_x = (float)gyr_x_raw * sensor->gyr_range / 32768;
-    *gyr_y = (float)gyr_y_raw * sensor->gyr_range / 32768;
-    *gyr_z = (float)gyr_z_raw * sensor->gyr_range / 32768;
+    *gyr_x = (double)gyr_x_raw * sensor->gyr_range / 32768;
+    *gyr_y = (double)gyr_y_raw * sensor->gyr_range / 32768;
+    *gyr_z = (double)gyr_z_raw * sensor->gyr_range / 32768;
 }
 
-void get_temp(struct bmi270 *sensor, float *temp_celsius)
+void get_temp(struct bmi270 *sensor, double *temp_celsius)
 {
     int16_t temp_raw;
 

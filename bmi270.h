@@ -115,12 +115,12 @@ void get_gyr_raw(struct bmi270 *sensor, int16_t *gyr_x_raw, int16_t *gyr_y_raw, 
 void get_temp_raw(struct bmi270 *sensor, int16_t *temp);
 
 /* Get accelerometer data in m/s^2 */
-void get_acc(struct bmi270 *sensor, float *acc_x, float *acc_y, float *acc_z);
+void get_acc(struct bmi270 *sensor, double *acc_x, double *acc_y, double *acc_z);
 
 /* Get gyroscope data in °/s */
-void get_gyr(struct bmi270 *sensor, float *gyr_x, float *gyr_y, float *gyr_z);
+void get_gyr(struct bmi270 *sensor, double *gyr_x, double *gyr_y, double *gyr_z);
 
 /* Get temperature data in °C */
-void get_temp(struct bmi270 *sensor, float *temp);
+void get_temp(struct bmi270 *sensor, double *temp);
 
 #endif // BMI270_H
