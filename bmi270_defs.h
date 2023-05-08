@@ -62,7 +62,7 @@
 -----------------------------------------------------*/
 
 // General
-#define GRAVITY             9.81288
+#define GRAVITY             9.80665
 #define DEG2RAD             (3.141592653589793 / 180.0)
 #define HERTZ_100           0.01
 #define HERTZ_200           0.005
