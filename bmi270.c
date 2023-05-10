@@ -307,25 +307,25 @@ void set_acc_range(struct bmi270 *sensor, uint8_t range)
     if (range == ACC_RANGE_2G)
     {
         write_register(sensor, ACC_RANGE, ACC_RANGE_2G);
-        sensor->acc_range = 2 * GRAVITY;
+        sensor->acc_range = 2.0 * GRAVITY;
         printf("0x%X --> ACC range set to: 2G\n", sensor->i2c_addr);
     }
     else if (range == ACC_RANGE_4G)
     {
         write_register(sensor, ACC_RANGE, ACC_RANGE_4G);
-        sensor->acc_range = 4 * GRAVITY;
+        sensor->acc_range = 4.0 * GRAVITY;
         printf("0x%X --> ACC range set to: 4G\n", sensor->i2c_addr);
     }
     else if (range == ACC_RANGE_8G)
     {
         write_register(sensor, ACC_RANGE, ACC_RANGE_8G);
-        sensor->acc_range = 8 * GRAVITY;
+        sensor->acc_range = 8.0 * GRAVITY;
         printf("0x%X --> ACC range set to: 8G\n", sensor->i2c_addr);
     }
     else if (range == ACC_RANGE_16G)
     {
         write_register(sensor, ACC_RANGE, ACC_RANGE_16G);
-        sensor->acc_range = 16 * GRAVITY;
+        sensor->acc_range = 16.0 * GRAVITY;
         printf("0x%X --> ACC range set to: 16G\n", sensor->i2c_addr);
     }
     else
@@ -337,31 +337,31 @@ void set_gyr_range(struct bmi270 *sensor, uint8_t range)
     if (range == GYR_RANGE_2000)
     {
         write_register(sensor, GYR_RANGE, GYR_RANGE_2000);
-        sensor->gyr_range = 2000;
+        sensor->gyr_range = 2000.0 * DEG2RAD;
         printf("0x%X --> GYR range set to: 2000 DPS\n", sensor->i2c_addr);
     }
     else if (range == GYR_RANGE_1000)
     {
         write_register(sensor, GYR_RANGE, GYR_RANGE_1000);
-        sensor->gyr_range = 1000;
+        sensor->gyr_range = 1000.0 * DEG2RAD;
         printf("0x%X --> GYR range set to: 1000 DPS\n", sensor->i2c_addr);
     }
     else if (range == GYR_RANGE_500)
     {
         write_register(sensor, GYR_RANGE, GYR_RANGE_500);
-        sensor->gyr_range = 500;
+        sensor->gyr_range = 500.0 * DEG2RAD;
         printf("0x%X --> GYR range set to: 500 DPS\n", sensor->i2c_addr);
     }
     else if (range == GYR_RANGE_250)
     {
         write_register(sensor, GYR_RANGE, GYR_RANGE_250);
-        sensor->gyr_range = 250;
+        sensor->gyr_range = 250.0 * DEG2RAD;
         printf("0x%X --> GYR range set to: 250 DPS\n", sensor->i2c_addr);
     }
     else if (range == GYR_RANGE_125)
     {
         write_register(sensor, GYR_RANGE, GYR_RANGE_125);
-        sensor->gyr_range = 125;
+        sensor->gyr_range = 125.0 * DEG2RAD;
         printf("0x%X --> GYR range set to: 125 DPS\n", sensor->i2c_addr);
     }
     else
@@ -634,9 +634,9 @@ void get_acc(struct bmi270 *sensor, double *acc_x, double *acc_y, double *acc_z)
 
     get_acc_raw(sensor, &acc_x_raw, &acc_y_raw, &acc_z_raw);
 
-    *acc_x = (double)acc_x_raw * sensor->acc_range / 32768;
-    *acc_y = (double)acc_y_raw * sensor->acc_range / 32768;
-    *acc_z = (double)acc_z_raw * sensor->acc_range / 32768;
+    *acc_x = (double)acc_x_raw * sensor->acc_range / 32768.0;
+    *acc_y = (double)acc_y_raw * sensor->acc_range / 32768.0;
+    *acc_z = (double)acc_z_raw * sensor->acc_range / 32768.0;
 }
 
 void get_gyr(struct bmi270 *sensor, double *gyr_x, double *gyr_y, double *gyr_z)
@@ -645,9 +645,9 @@ void get_gyr(struct bmi270 *sensor, double *gyr_x, double *gyr_y, double *gyr_z)
 
     get_gyr_raw(sensor, &gyr_x_raw, &gyr_y_raw, &gyr_z_raw);
 
-    *gyr_x = (double)gyr_x_raw * sensor->gyr_range / 32768;
-    *gyr_y = (double)gyr_y_raw * sensor->gyr_range / 32768;
-    *gyr_z = (double)gyr_z_raw * sensor->gyr_range / 32768;
+    *gyr_x = (double)gyr_x_raw * sensor->gyr_range / 32768.0;
+    *gyr_y = (double)gyr_y_raw * sensor->gyr_range / 32768.0;
+    *gyr_z = (double)gyr_z_raw * sensor->gyr_range / 32768.0;
 }
 
 void get_temp(struct bmi270 *sensor, double *temp_celsius)
@@ -656,5 +656,5 @@ void get_temp(struct bmi270 *sensor, double *temp_celsius)
 
     get_temp_raw(sensor, &temp_raw);
 
-    *temp_celsius = (float)temp_raw * 0.001952594 + 23;
+    *temp_celsius = (double)temp_raw * 0.001952594 + 23.0;
 }

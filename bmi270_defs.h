@@ -148,13 +148,13 @@ struct bmi270
     uint8_t internal_status;
 
     /* Accelerator Range */
-    float acc_range;
+    double acc_range;
 
     /* Accelerator ODR */
     int acc_odr;
 
     /* Gyroscope Range */
-    int gyr_range;
+    double gyr_range;
 
     /* Gyroscope ODR */
     int gyr_odr;
