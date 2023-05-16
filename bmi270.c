@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "bmi270.h"
 
@@ -46,7 +47,10 @@ uint8_t read_register(struct bmi270 *sensor, uint8_t reg_addr)
     i2c_data.msgs = i2c_msg;
     i2c_data.nmsgs = 2;
 
-    // Send I2C transaction to read data from register
+    // Send I2C transaction to read data from register    i2c_msg[0].addr = sensor->i2c_addr;
+    i2c_msg[0].flags = 0;
+    i2c_msg[0].len = sizeof(write_buf);
+    i2c_msg[0].buf = write_buf;
     if (ioctl(sensor->i2c_fd, I2C_RDWR, &i2c_data) < 0)
     {
         printf("0x%X --> Failed to read from I2C device\n", sensor->i2c_addr);
@@ -304,237 +308,201 @@ void disable_temp(struct bmi270 *sensor)
 
 void set_acc_range(struct bmi270 *sensor, uint8_t range)
 {
-    if (range == ACC_RANGE_2G)
+    double value = 0.0;
+
+    switch (range)
     {
-        write_register(sensor, ACC_RANGE, ACC_RANGE_2G);
-        sensor->acc_range = 2.0 * GRAVITY;
-        printf("0x%X --> ACC range set to: 2G\n", sensor->i2c_addr);
-    }
-    else if (range == ACC_RANGE_4G)
-    {
-        write_register(sensor, ACC_RANGE, ACC_RANGE_4G);
-        sensor->acc_range = 4.0 * GRAVITY;
-        printf("0x%X --> ACC range set to: 4G\n", sensor->i2c_addr);
-    }
-    else if (range == ACC_RANGE_8G)
-    {
-        write_register(sensor, ACC_RANGE, ACC_RANGE_8G);
-        sensor->acc_range = 8.0 * GRAVITY;
-        printf("0x%X --> ACC range set to: 8G\n", sensor->i2c_addr);
-    }
-    else if (range == ACC_RANGE_16G)
-    {
-        write_register(sensor, ACC_RANGE, ACC_RANGE_16G);
-        sensor->acc_range = 16.0 * GRAVITY;
-        printf("0x%X --> ACC range set to: 16G\n", sensor->i2c_addr);
-    }
-    else
+    case (ACC_RANGE_16G):
+        value = 16.0;
+        break;
+    case (ACC_RANGE_8G):
+        value = 8.0;
+        break;
+    case (ACC_RANGE_4G):
+        value = 4.0;
+        break;
+    case (ACC_RANGE_2G):
+        value = 2.0;
+        break;
+    default:
         printf("0x%X --> Wrong ACC range. Use 'ACC_RANGE_2G', 'ACC_RANGE_4G', 'ACC_RANGE_8G' or 'ACC_RANGE_16G'\n", sensor->i2c_addr);
+        return;
+    }
+
+    write_register(sensor, ACC_RANGE, range);
+    sensor->acc_range = value * GRAVITY;
+    printf("0x%X --> ACC range set to: %0.fG\n", sensor->i2c_addr, value);
 }
 
 void set_gyr_range(struct bmi270 *sensor, uint8_t range)
 {
-    if (range == GYR_RANGE_2000)
+    double value = 0.0;
+
+    switch (range)
     {
-        write_register(sensor, GYR_RANGE, GYR_RANGE_2000);
-        sensor->gyr_range = 2000.0 * DEG2RAD;
-        printf("0x%X --> GYR range set to: 2000 DPS\n", sensor->i2c_addr);
-    }
-    else if (range == GYR_RANGE_1000)
-    {
-        write_register(sensor, GYR_RANGE, GYR_RANGE_1000);
-        sensor->gyr_range = 1000.0 * DEG2RAD;
-        printf("0x%X --> GYR range set to: 1000 DPS\n", sensor->i2c_addr);
-    }
-    else if (range == GYR_RANGE_500)
-    {
-        write_register(sensor, GYR_RANGE, GYR_RANGE_500);
-        sensor->gyr_range = 500.0 * DEG2RAD;
-        printf("0x%X --> GYR range set to: 500 DPS\n", sensor->i2c_addr);
-    }
-    else if (range == GYR_RANGE_250)
-    {
-        write_register(sensor, GYR_RANGE, GYR_RANGE_250);
-        sensor->gyr_range = 250.0 * DEG2RAD;
-        printf("0x%X --> GYR range set to: 250 DPS\n", sensor->i2c_addr);
-    }
-    else if (range == GYR_RANGE_125)
-    {
-        write_register(sensor, GYR_RANGE, GYR_RANGE_125);
-        sensor->gyr_range = 125.0 * DEG2RAD;
-        printf("0x%X --> GYR range set to: 125 DPS\n", sensor->i2c_addr);
-    }
-    else
+    case (GYR_RANGE_2000):
+        value = 2000.0;
+        break;
+    case (GYR_RANGE_1000):
+        value = 1000.0;
+        break;
+    case (GYR_RANGE_500):
+        value = 500.0;
+        break;
+    case (GYR_RANGE_250):
+        value = 250.0;
+        break;
+    case (GYR_RANGE_125):
+        value = 125.0;
+        break;
+    default:
         printf("0x%X --> Wrong GYR range. Use 'GYR_RANGE_2000', 'GYR_RANGE_1000', 'GYR_RANGE_500', 'GYR_RANGE_250' or 'GYR_RANGE_125'\n", sensor->i2c_addr);
+        return;
+    }
+
+    write_register(sensor, GYR_RANGE, range);
+    sensor->gyr_range = value * DEG2RAD;
+    printf("0x%X --> GYR range set to: %0.f\n", sensor->i2c_addr, value);
 }
 
 void set_acc_odr(struct bmi270 *sensor, uint8_t odr)
 {
-    if (odr == ACC_ODR_1600)
+    int value = 0;
+
+    switch (odr)
     {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & MSB_MASK_8BIT) | ACC_ODR_1600));
-        sensor->acc_odr = 1600;
-        printf("0x%X --> ACC ODR set to: 1600 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == ACC_ODR_800)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & MSB_MASK_8BIT) | ACC_ODR_800));
-        sensor->acc_odr = 800;
-        printf("0x%X --> ACC ODR set to: 800 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == ACC_ODR_400)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & MSB_MASK_8BIT) | ACC_ODR_400));
-        sensor->acc_odr = 400;
-        printf("0x%X --> ACC ODR set to: 400 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == ACC_ODR_200)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & MSB_MASK_8BIT) | ACC_ODR_200));
-        sensor->acc_odr = 200;
-        printf("0x%X --> ACC ODR set to: 200 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == ACC_ODR_100)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & MSB_MASK_8BIT) | ACC_ODR_100));
-        sensor->acc_odr = 100;
-        printf("0x%X --> ACC ODR set to: 100 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == ACC_ODR_50)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & MSB_MASK_8BIT) | ACC_ODR_50));
-        sensor->acc_odr = 50;
-        printf("0x%X --> ACC ODR set to: 50 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == ACC_ODR_25)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & MSB_MASK_8BIT) | ACC_ODR_25));
-        sensor->acc_odr = 25;
-        printf("0x%X --> ACC ODR set to: 25 Hz\n", sensor->i2c_addr);
-    }
-    else
+    case (ACC_ODR_1600):
+        value = 1600;
+        break;
+    case (ACC_ODR_800):
+        value = 800;
+        break;
+    case (ACC_ODR_400):
+        value = 400;
+        break;
+    case (ACC_ODR_200):
+        value = 200;
+        break;
+    case (ACC_ODR_100):
+        value = 100;
+        break;
+    case (ACC_ODR_50):
+        value = 50;
+        break;
+    case (ACC_ODR_25):
+        value = 25;
+        break;
+    default:
         printf("0x%X --> Wrong ACC ODR. Use 'ACC_ODR_1600', 'ACC_ODR_800', 'ACC_ODR_400', 'ACC_ODR_200', 'ACC_ODR_100', 'ACC_ODR_50' or 'ACC_ODR_25'\n", sensor->i2c_addr);
+        return;
+    }
+
+    write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & MSB_MASK_8BIT) | odr));
+    sensor->acc_odr = value;
+    printf("0x%X --> ACC ODR set to: %d Hz\n", sensor->i2c_addr, value);
 }
 
 void set_gyr_odr(struct bmi270 *sensor, uint8_t odr)
 {
-    if (odr == GYR_ODR_3200)
+    int value = 0;
+
+    switch (odr)
     {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & MSB_MASK_8BIT) | GYR_ODR_3200));
-        sensor->gyr_odr = 3200;
-        printf("0x%X --> GYR ODR set to: 3200 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == GYR_ODR_1600)
-    {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & MSB_MASK_8BIT) | GYR_ODR_1600));
-        sensor->gyr_odr = 1600;
-        printf("0x%X --> GYR ODR set to: 1600 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == GYR_ODR_800)
-    {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & MSB_MASK_8BIT) | GYR_ODR_800));
-        sensor->gyr_odr = 800;
-        printf("0x%X --> GYR ODR set to: 800 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == GYR_ODR_400)
-    {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & MSB_MASK_8BIT) | GYR_ODR_400));
-        sensor->gyr_odr = 400;
-        printf("0x%X --> GYR ODR set to: 400 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == GYR_ODR_200)
-    {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & MSB_MASK_8BIT) | GYR_ODR_200));
-        sensor->gyr_odr = 200;
-        printf("0x%X --> GYR ODR set to: 200 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == GYR_ODR_100)
-    {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & MSB_MASK_8BIT) | GYR_ODR_100));
-        sensor->gyr_odr = 100;
-        printf("0x%X --> GYR ODR set to: 100 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == GYR_ODR_50)
-    {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & MSB_MASK_8BIT) | GYR_ODR_50));
-        sensor->gyr_odr = 50;
-        printf("0x%X --> GYR ODR set to: 50 Hz\n", sensor->i2c_addr);
-    }
-    else if (odr == GYR_ODR_25)
-    {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & MSB_MASK_8BIT) | GYR_ODR_25));
-        sensor->gyr_odr = 25;
-        printf("0x%X --> GYR ODR set to: 25 Hz\n", sensor->i2c_addr);
-    }
-    else
+    case (GYR_ODR_3200):
+        value = 3200;
+        break;
+    case (GYR_ODR_1600):
+        value = 1600;
+        break;
+    case (GYR_ODR_800):
+        value = 800;
+        break;
+    case (GYR_ODR_400):
+        value = 400;
+        break;
+    case (GYR_ODR_200):
+        value = 200;
+        break;
+    case (GYR_ODR_100):
+        value = 100;
+        break;
+    case (GYR_ODR_50):
+        value = 50;
+        break;
+    case (GYR_ODR_25):
+        value = 25;
+        break;
+    default:
         printf("0x%X --> Wrong GYR ODR. Use 'GYR_ODR_3200', 'GYR_ODR_1600', 'GYR_ODR_800', 'GYR_ODR_400', 'GYR_ODR_200', 'GYR_ODR_100', 'GYR_ODR_50' or 'GYR_ODR_25'\n", sensor->i2c_addr);
+        return;
+    }
+
+    write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & MSB_MASK_8BIT) | odr));
+    sensor->gyr_odr = value;
+    printf("0x%X --> GYR ODR set to: %d Hz\n", sensor->i2c_addr, value);
 }
 
 void set_acc_bwp(struct bmi270 *sensor, uint8_t bwp)
 {
-    if (bwp == ACC_BWP_OSR4)
+    char str[7];
+
+    switch (bwp)
     {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & LSB_MASK_8BIT_8) | (ACC_BWP_OSR4 << 4)));
-        printf("0x%X --> ACC BWP set to: OSR4\n", sensor->i2c_addr);
-    }
-    else if (bwp == ACC_BWP_OSR2)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & LSB_MASK_8BIT_8) | (ACC_BWP_OSR2 << 4)));
-        printf("0x%X --> ACC BWP set to: OSR2\n", sensor->i2c_addr);
-    }
-    else if (bwp == ACC_BWP_NORMAL)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & LSB_MASK_8BIT_8) | (ACC_BWP_NORMAL << 4)));
-        printf("0x%X --> ACC BWP set to: NORMAL\n", sensor->i2c_addr);
-    }
-    else if (bwp == ACC_BWP_CIC)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & LSB_MASK_8BIT_8) | (ACC_BWP_CIC << 4)));
-        printf("0x%X --> ACC BWP set to: CIC\n", sensor->i2c_addr);
-    }
-    else if (bwp == ACC_BWP_RES16)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & LSB_MASK_8BIT_8) | (ACC_BWP_RES16 << 4)));
-        printf("0x%X --> ACC BWP set to: RES16\n", sensor->i2c_addr);
-    }
-    else if (bwp == ACC_BWP_RES32)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & LSB_MASK_8BIT_8) | (ACC_BWP_RES32 << 4)));
-        printf("0x%X --> ACC BWP set to: RES32\n", sensor->i2c_addr);
-    }
-    else if (bwp == ACC_BWP_RES64)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & LSB_MASK_8BIT_8) | (ACC_BWP_RES64 << 4)));
-        printf("0x%X --> ACC BWP set to: RES64\n", sensor->i2c_addr);
-    }
-    else if (bwp == ACC_BWP_RES128)
-    {
-        write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & LSB_MASK_8BIT_8) | (ACC_BWP_RES128 << 4)));
-        printf("0x%X --> ACC BWP set to: RES128\n", sensor->i2c_addr);
-    }
-    else
+    case (ACC_BWP_OSR4):
+        strcpy(str, "OSR4");
+        break;
+    case (ACC_BWP_OSR2):
+        strcpy(str, "OSR2");
+        break;
+    case (ACC_BWP_NORMAL):
+        strcpy(str, "NORMAL");
+        break;
+    case (ACC_BWP_CIC):
+        strcpy(str, "CIC");
+        break;
+    case (ACC_BWP_RES16):
+        strcpy(str, "RES16");
+        break;
+    case (ACC_BWP_RES32):
+        strcpy(str, "RES32");
+        break;
+    case (ACC_BWP_RES64):
+        strcpy(str, "RES64");
+        break;
+    case (ACC_BWP_RES128):
+        strcpy(str, "RES128");
+        break;
+    default:
         printf("0x%X --> Wrong ACC BWP. Use 'ACC_BWP_OSR4', 'ACC_BWP_OSR2', 'ACC_BWP_NORMAL', 'ACC_BWP_CIC', 'ACC_BWP_RES16', 'ACC_BWP_RES32', 'ACC_BWP_RES64' or 'ACC_BWP_RES128'\n", sensor->i2c_addr);
+        return;
+    }
+
+    write_register(sensor, ACC_CONF, ((read_register(sensor, ACC_CONF) & LSB_MASK_8BIT_8) | (bwp << 4)));
+    printf("0x%X --> ACC BWP set to: %s\n", sensor->i2c_addr, str);
 }
 
 void set_gyr_bwp(struct bmi270 *sensor, uint8_t bwp)
 {
-    if (bwp == GYR_BWP_OSR4)
+    char str[7];
+
+    switch (bwp)
     {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & LSB_MASK_8BIT_8) | (GYR_BWP_OSR4 << 4)));
-        printf("0x%X --> GYR BWP set to: OSR4\n", sensor->i2c_addr);
-    }
-    else if (bwp == GYR_BWP_OSR2)
-    {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & LSB_MASK_8BIT_8) | (GYR_BWP_OSR2 << 4)));
-        printf("0x%X --> GYR BWP set to: OSR2\n", sensor->i2c_addr);
-    }
-    else if (bwp == GYR_BWP_NORMAL)
-    {
-        write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & LSB_MASK_8BIT_8) | (GYR_BWP_NORMAL << 4)));
-        printf("0x%X --> GYR BWP set to: NORMAL\n", sensor->i2c_addr);
-    }
-    else
+    case (GYR_BWP_OSR4):
+        strcpy(str, "OSR4");
+        break;
+    case (GYR_BWP_OSR2):
+        strcpy(str, "OSR2");
+        break;
+    case (GYR_BWP_NORMAL):
+        strcpy(str, "NORMAL");
+        break;
+    default:
         printf("0x%X --> Wrong GYR BWP. Use 'GYR_BWP_OSR4', 'GYR_BWP_OSR2' or 'GYR_BWP_NORMAL'\n", sensor->i2c_addr);
+        return;
+    }
+
+    write_register(sensor, GYR_CONF, ((read_register(sensor, GYR_CONF) & LSB_MASK_8BIT_8) | (bwp << 4)));
+    printf("0x%X --> GYR BWP set to: %s\n", sensor->i2c_addr, str);
 }
 
 void enable_fifo_header(struct bmi270 *sensor)
