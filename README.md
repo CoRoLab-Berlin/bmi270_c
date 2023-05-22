@@ -28,7 +28,7 @@ Check out the [main.c](https://github.com/CoRoLab-Berlin/bmi270_python/tree/main
 - BMI270 integration
 - load config file into BMI270
 - write/read registers
-- a few other functions (check bmi270.h)
+- a few other functions (check [bmi270.h](https://github.com/CoRoLab-Berlin/bmi270_c/blob/main/bmi270.h))
 
 ## Python Version
 
