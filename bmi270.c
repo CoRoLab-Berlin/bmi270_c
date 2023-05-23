@@ -519,13 +519,13 @@ void disable_fifo_header(struct bmi270 *sensor)
 
 void enable_data_streaming(struct bmi270 *sensor)
 {
-    write_register(sensor, FIFO_CONFIG_1, (read_register(sensor, FIFO_CONFIG_1) | LAST_3_BITS));
+    write_register(sensor, FIFO_CONFIG_1, (read_register(sensor, FIFO_CONFIG_1) & ~LAST_3_BITS));
     printf("0x%X --> Data streaming mode enabled (no data will be stored in FIFO)\n", sensor->i2c_addr);
 }
 
 void disable_data_streaming(struct bmi270 *sensor)
 {
-    write_register(sensor, FIFO_CONFIG_1, (read_register(sensor, FIFO_CONFIG_1) & ~LAST_3_BITS));
+    write_register(sensor, FIFO_CONFIG_1, (read_register(sensor, FIFO_CONFIG_1) | LAST_3_BITS));
     printf("0x%X --> Data streaming mode disabled (data will be stored in FIFO)\n", sensor->i2c_addr);
 }
 
