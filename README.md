@@ -17,7 +17,7 @@ The BMI270 requires a config load. This initialization step is necessary to be a
 
 A full power cycle is necessary if you want to load the config again.
 
-Check out the [main.c](https://github.com/CoRoLab-Berlin/bmi270_python/tree/main/examples) for more usage information.
+Check out the [main.c](https://github.com/CoRoLab-Berlin/bmi270_c/blob/main/example/main.c) for more usage information.
 
 ## Tested with:
 - Ubuntu 22.04.2 LTS
@@ -28,7 +28,7 @@ Check out the [main.c](https://github.com/CoRoLab-Berlin/bmi270_python/tree/main
 - BMI270 integration
 - load config file into BMI270
 - write/read registers
-- a few other functions (check [bmi270.h](https://github.com/CoRoLab-Berlin/bmi270_c/blob/main/bmi270.h))
+- a few other functions (check [bmi270.h](https://github.com/CoRoLab-Berlin/bmi270_c/blob/main/driver/bmi270.h))
 
 ## Python Version
 
@@ -38,10 +38,12 @@ You can install this package using this command:
 
 `pip3 install bmi270`
 
+Check the [README](https://github.com/CoRoLab-Berlin/bmi270_python) for more information.
+
+## Raspberry Pi
+
 For a Raspberry Pi Setup add/change this line in /boot/config.txt to your desired baudrate:
 
 `dtparam=i2c_baudrate=400000`
 
 Reboot your Raspberry Pi after applying the change.
-
-Check the [README](https://github.com/CoRoLab-Berlin/bmi270_python) for more information.
